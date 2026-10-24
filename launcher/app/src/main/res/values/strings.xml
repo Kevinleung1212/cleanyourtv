@@ -145,4 +145,10 @@
     <!-- Cinematic top shelf (cinematic_home): the line under the focused dock app's name; %1$s is when it was
          last opened, e.g. "5 minutes ago" or "yesterday, 9:40 pm". -->
     <string name="last_opened">Last opened %1$s</string>
+    <string name="folder_create">Create folder</string>
+    <string name="folder_add">Add to folder</string>
+    <string name="folder_default">Folder</string>
+    <string name="folder_rename">Rename folder</string>
+    <string name="folder_delete">Delete folder</string>
+    <string name="folder_delete_hint">Apps remain installed and return to Home.</string>
 </resources>

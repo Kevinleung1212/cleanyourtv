@@ -2978,6 +2978,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (reordering) return;
         String key = adapter.keyAt(position);
         String pkg = adapter.packageAt(position);
+        String folderId = adapter.folderAt(position);
+        if (folderId != null) {
+            showFolderMenu(folderId, card);
+            return;
+        }
         // Empty dock slots and the Default-home tile carry the launcher's own package: no menu for them.
         if (key == null || pkg == null || pkg.equals(getPackageName())) return;
         View panel = getLayoutInflater().inflate(R.layout.popup_inputs, root, false);
@@ -2996,12 +3001,15 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             pickUp(at);
             Toast.makeText(this, R.string.reorder_hint, Toast.LENGTH_LONG).show();
         });
+        addSettingsMenuRow(rows, popup, R.string.folder_create, () -> promptCreateFolder(pkg));
+        if (!FolderStore.all(this).isEmpty()) addSettingsMenuRow(rows, popup, R.string.folder_add,
+                () -> pickExistingFolder(pkg));
+        addSettingsMenuRow(rows, popup, R.string.library_app_info, () -> open(new Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + pkg))));
         if (appLibraryEnabled) addSettingsMenuRow(rows, popup, R.string.library_remove_shortcut, () -> {
             if (LibraryApps.save(this, pkg, false)) reloadApps(false);
             else Toast.makeText(this, R.string.library_save_failed, Toast.LENGTH_LONG).show();
         });
-        addSettingsMenuRow(rows, popup, R.string.library_app_info, () -> open(new Intent(
-                Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + pkg))));
         panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
         popup.setWidth(Math.max((int) (200 * density), panel.getMeasuredWidth()));
         // Dock tiles sit near the bottom of the screen: open the menu above the tile when it would not fit below.
@@ -3020,6 +3028,50 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     .setInterpolator(new android.view.animation.DecelerateInterpolator(1.6f)).start();
         }
         rows.getChildAt(0).requestFocus();
+    }
+
+    private void promptCreateFolder(String pkg) {
+        android.widget.EditText input = new android.widget.EditText(this);
+        input.setSingleLine(true);
+        input.setHint(R.string.folder_default);
+        new android.app.AlertDialog.Builder(this).setTitle(R.string.folder_create)
+                .setView(input).setPositiveButton(android.R.string.ok, (d, w) -> {
+                    if (FolderStore.create(this, input.getText().toString(), pkg) != null) reloadApps(false);
+                }).setNegativeButton(android.R.string.cancel, null).show();
+    }
+
+    private void pickExistingFolder(String pkg) {
+        List<FolderStore.Folder> folders = FolderStore.all(this);
+        String[] names = new String[folders.size()];
+        for (int i = 0; i < folders.size(); i++) names[i] = folders.get(i).name;
+        new android.app.AlertDialog.Builder(this).setTitle(R.string.folder_add)
+                .setItems(names, (d, w) -> {
+                    if (FolderStore.add(this, folders.get(w).id, pkg)) reloadApps(false);
+                }).show();
+    }
+
+    private void showFolderMenu(String folderId, View anchor) {
+        FolderStore.Folder folder = FolderStore.get(this, folderId);
+        if (folder == null) return;
+        String[] actions = {getString(R.string.folder_rename), getString(R.string.folder_delete)};
+        new android.app.AlertDialog.Builder(this).setTitle(folder.name)
+                .setItems(actions, (d, choice) -> {
+                    if (choice == 0) {
+                        android.widget.EditText edit = new android.widget.EditText(this);
+                        edit.setSingleLine(true);
+                        edit.setText(folder.name);
+                        new android.app.AlertDialog.Builder(this).setTitle(R.string.folder_rename)
+                                .setView(edit).setPositiveButton(android.R.string.ok, (x, y) -> {
+                                    if (FolderStore.rename(this, folderId, edit.getText().toString())) reloadApps(false);
+                                }).setNegativeButton(android.R.string.cancel, null).show();
+                    } else {
+                        new android.app.AlertDialog.Builder(this).setTitle(R.string.folder_delete)
+                                .setMessage(R.string.folder_delete_hint)
+                                .setPositiveButton(R.string.folder_delete, (x, y) -> {
+                                    if (FolderStore.delete(this, folderId)) reloadApps(false);
+                                }).setNegativeButton(android.R.string.cancel, null).show();
+                    }
+                }).show();
     }
 
     private void addSettingsMenuRow(LinearLayout rows, PopupWindow popup, int title, Runnable action) {

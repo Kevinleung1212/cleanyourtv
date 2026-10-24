@@ -63,4 +63,10 @@
         <item quantity="other">%1$d 个应用</item>
     </plurals>
     <string name="greeting_with_name">%1$s，%2$s</string>
+    <string name="folder_create">新建文件夹</string>
+    <string name="folder_add">加入文件夹</string>
+    <string name="folder_default">文件夹</string>
+    <string name="folder_rename">重命名文件夹</string>
+    <string name="folder_delete">删除文件夹</string>
+    <string name="folder_delete_hint">应用不会卸载，删除文件夹后会重新显示在主屏幕。</string>
 </resources>

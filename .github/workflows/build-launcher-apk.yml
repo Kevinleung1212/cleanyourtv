@@ -1,0 +1,43 @@
+name: Build Launcher APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-launcher:
+    name: Build CleanYourTV Launcher (release APK)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK 34
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-34 build-tools;34.0.0'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Compile Launcher release APK
+        working-directory: launcher
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon :app:assembleRelease
+
+      - name: Upload Launcher APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: CleanYourTV-Launcher-APK
+          path: launcher/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+          retention-days: 30

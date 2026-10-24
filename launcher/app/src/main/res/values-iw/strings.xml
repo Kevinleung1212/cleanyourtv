@@ -141,4 +141,10 @@
     <string name="race_countdown_hours">%1$d שע׳ %2$d דק׳</string>
     <string name="race_countdown_days">%1$d ימ׳ %2$d שע׳</string>
     <string name="last_opened">פתיחה אחרונה: %1$s</string>
+    <string name="folder_create">יצירת תיקייה</string>
+    <string name="folder_add">הוספה לתיקייה</string>
+    <string name="folder_default">תיקייה</string>
+    <string name="folder_rename">שינוי שם התיקייה</string>
+    <string name="folder_delete">מחיקת תיקייה</string>
+    <string name="folder_delete_hint">האפליקציות לא יוסרו מהמכשיר ויחזרו למסך הבית.</string>
 </resources>
